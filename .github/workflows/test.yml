@@ -24,7 +24,18 @@ jobs:
       - run: pnpm build
       - run: pnpm lint
   test_action:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest # linux/amd64
+          - ubuntu-24.04-arm # linux/arm64
+          - macos-latest # darwin/arm64
+          - windows-latest # windows/amd64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash # use git-bash on Windows so the steps below are portable
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -35,7 +46,7 @@ jobs:
         env:
           RUNNER_DEBUG: 1
       - name: Find CLI
-        run: ls -lR $RUNNER_TOOL_CACHE/scw
+        run: ls -lR "$RUNNER_TOOL_CACHE/scw" || true
       - name: Use CLI
         run: scw info
   test_action_usage:
